@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>空もよう？</title>
+  <style>
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --muted:#9aa7b2;
+      --accent:#4fc3f7;
+      --glass: rgba(255,255,255,0.03);
+      font-family: Inter, Yu Gothic, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0;display:grid;place-items:center;min-height:100vh;background:linear-gradient(180deg,#061126 0%, #0b1b2a 100%);
+      color:#e6eef6;
+    }
+    .app{
+      width:360px;max-width:calc(100% - 32px);border-radius:18px;padding:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 30px rgba(2,8,23,0.6);
+      backdrop-filter: blur(6px);
+    }
+    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .title{font-weight:600;font-size:18px;letter-spacing:0.2px}
+    .subtitle{font-size:12px;color:var(--muted)}
+
+    .card{
+      background: linear-gradient(135deg,var(--card), rgba(255,255,255,0.01));border-radius:14px;padding:18px;display:flex;gap:16px;align-items:center;position:relative;overflow:hidden
+    }
+    .icon{
+      width:96px;height:96px;display:grid;place-items:center;flex:0 0 96px
+    }
+    .info{flex:1}
+    .temp{font-size:36px;font-weight:700;line-height:1}
+    .desc{font-size:14px;color:var(--muted);margin-top:6px}
+    .meta{display:flex;gap:12px;margin-top:12px;color:var(--muted);font-size:13px}
+
+    .controls{display:flex;gap:8px;margin-top:14px}
+    button{appearance:none;border:0;padding:10px 12px;border-radius:10px;background:var(--glass);color:inherit;cursor:pointer;font-weight:600}
+    button.primary{background:linear-gradient(90deg,var(--accent),#65d6ff);color:#022032}
+    .small{font-size:12px;padding:8px 10px}
+
+    .stat{display:flex;flex-direction:column;align-items:flex-end}
+    .stat .label{font-size:11px;color:var(--muted)}
+    .stat .value{font-weight:700}
+
+    .bg-anim{position:absolute;right:-20%;top:-30%;width:220px;height:220px;filter:blur(30px);opacity:0.15;border-radius:50%;pointer-events:none}
+
+    footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+
+    /* responsive */
+    @media (max-width:380px){.icon{width:80px;height:80px;flex:0 0 80px}.temp{font-size:30px}}
+  </style>
+</head>
+<body>
+  <main class="app" role="application" aria-label="ランダム天気アプリ">
+    <header>
+      <div>
+        <div class="title">ランダム天気アプリ：空もよう？</div>
+        <div class="subtitle">ランダムな天気を表示します。</div>
+      </div>
+      <div class="subtitle" id="timeNow">-</div>
+    </header>
+
+    <section class="card" id="weatherCard">
+      <div class="bg-anim" id="bgAnim"></div>
+
+      <div class="icon" id="iconArea" aria-hidden="true">
+        <!-- SVG icon injected by JS -->
+      </div>
+
+      <div class="info">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div id="location" style="font-weight:700">ポートビラ</div>
+            <div id="description" class="desc">--</div>
+          </div>
+          <div class="stat">
+            <div class="label">気温</div>
+            <div class="value" id="temp">--°C</div>
+          </div>
+        </div>
+
+        <div class="meta" aria-hidden="true">
+          <div>体感: <span id="feels">--°C</span></div>
+          <div>湿度: <span id="humid">--%</span></div>
+          <div>風速: <span id="wind">--m/s</span></div>
+        </div>
+
+      </div>
+    </section>
+
+    <div class="controls">
+      <button class="primary" id="rndBtn">ランダム天気</button>
+      <button id="autoToggle" class="small">自動: OFF</button>
+      <button id="copyBtn" class="small">JSON をコピー</button>
+      <button id="resetBtn" class="small">リセット</button>
+    </div>
+
+    <footer>
+      <div id="seedInfo">seed: -</div>
+      <div>Made with starcorperation</div>
+    </footer>
+  </main>
+
+  <script>
+    // データ定義（自由に拡張可）
+    const CONDITIONS = [
+      {id:'clear', label:'晴れ', colors:['#ffd86f','#ffb86b'], svg: iconSun},
+      {id:'partly', label:'曇り時々晴れ', colors:['#a8d0ff','#d7f0ff'], svg: iconPartly},
+      {id:'cloudy', label:'くもり', colors:['#cfd8e3','#9fb0c7'], svg: iconCloud},
+      {id:'rain', label:'雨', colors:['#9fd0ff','#6fb6ff'], svg: iconRain},
+      {id:'storm', label:'雷雨', colors:['#8aaed9','#475f7c'], svg: iconStorm},
+      {id:'snow', label:'雪', colors:['#eef6ff','#dff0ff'], svg: iconSnow},
+      {id:'fog', label:'霧', colors:['#cfd9df','#b7c5cc'], svg: iconFog},  
+    ];
+
+    // utility: seeded random (xorshift32)
+    function xorshift32(seed){
+      let x = seed || Date.now();
+      return function(){
+        x ^= x << 13; x = x >>> 0;
+        x ^= x >>> 17; x = x >>> 0;
+        x ^= x << 5;  x = x >>> 0;
+        return (x >>> 0) / 4294967295;
+      }
+    }
+
+    // get DOM
+    const rndBtn = document.getElementById('rndBtn');
+    const iconArea = document.getElementById('iconArea');
+    const locationEl = document.getElementById('location');
+    const descriptionEl = document.getElementById('description');
+    const tempEl = document.getElementById('temp');
+    const feelsEl = document.getElementById('feels');
+    const humidEl = document.getElementById('humid');
+    const windEl = document.getElementById('wind');
+    const seedInfo = document.getElementById('seedInfo');
+    const timeNow = document.getElementById('timeNow');
+    const bgAnim = document.getElementById('bgAnim');
+    const autoToggle = document.getElementById('autoToggle');
+    const copyBtn = document.getElementById('copyBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let auto = false; let autoTimer = null; let currentSeed = null; let rng = Math.random;
+
+    function updateClock(){
+      const d = new Date();
+      timeNow.textContent = d.toLocaleTimeString();
+    }
+    setInterval(updateClock,1000); updateClock();
+
+    function pick(arr){ return arr[Math.floor(rng()*arr.length)]; }
+
+    function generate(seed){
+      currentSeed = seed || Math.floor(Math.random()*0xffffffff);
+      rng = xorshift32(currentSeed);
+      const cond = pick(CONDITIONS);
+      const temp = Math.round((rng()*45)-10); // -10~35
+      const feels = temp + Math.round((rng()*6)-3);
+      const humid = Math.round(rng()*100);
+      const wind = (Math.round(rng()*150)/10).toFixed(1); // 0.0~15.0
+      const chanceRain = Math.round(rng()*100);
+      const locationNames = ['東京','大阪','京都','札幌','福岡','名古屋','広島','仙台','那覇','長野','ポートビラ'];
+      const loc = pick(locationNames);
+
+      const result = {
+        seed: currentSeed,
+        location: loc,
+        condition: cond.id,
+        description: cond.label + (chanceRain>50 ? ' (雨の可能性あり)' : ''),
+        temp, feels, humid, wind, chanceRain,
+        time: new Date().toISOString()
+      };
+
+      render(result, cond);
+      return result;
+    }
+
+    function render(data, cond){
+      seedInfo.textContent = 'seed: ' + data.seed;
+      locationEl.textContent = data.location;
+      descriptionEl.textContent = data.description;
+      tempEl.textContent = data.temp + '°C';
+      feelsEl.textContent = data.feels + '°C';
+      humidEl.textContent = data.humid + '%';
+      windEl.textContent = data.wind + ' m/s';
+
+      // icon
+      iconArea.innerHTML = '';
+      const svg = cond.svg();
+      iconArea.appendChild(svg);
+
+      // background accent
+      bgAnim.style.background = 'radial-gradient(circle at 30% 30%, ' + cond.colors[0] + ', transparent 40%), radial-gradient(circle at 70% 70%,'+cond.colors[1]+',transparent 30%)';
+
+      // subtle page background tint
+      document.body.style.background = 'linear-gradient(180deg,'+cond.colors[1]+'10 0%, #0b1b2a 100%)';
+    }
+
+    // event handlers
+    rndBtn.addEventListener('click', ()=>{ generate(); });
+
+    autoToggle.addEventListener('click', ()=>{
+      auto = !auto;
+      autoToggle.textContent = '自動: ' + (auto? 'ON':'OFF');
+      if(auto){
+        generate();
+        autoTimer = setInterval(()=> generate(), 4000);
+      } else { clearInterval(autoTimer); autoTimer=null; }
+    });
+
+    copyBtn.addEventListener('click', ()=>{
+      const data = generate();
+      navigator.clipboard?.writeText(JSON.stringify(data, null, 2)).then(()=>{
+        copyBtn.textContent = 'コピーしました';
+        setTimeout(()=>copyBtn.textContent='JSON をコピー',1200);
+      }).catch(()=>alert('クリップボードにコピーできませんでした'));
+    });
+
+    resetBtn.addEventListener('click', ()=>{
+      if(autoTimer){ clearInterval(autoTimer); autoTimer=null; auto=false; autoToggle.textContent='自動: OFF'; }
+      // default clean state
+      seedInfo.textContent = 'seed: -';
+      locationEl.textContent='東京'; descriptionEl.textContent='--'; tempEl.textContent='--°C'; feelsEl.textContent='--°C'; humidEl.textContent='--%'; windEl.textContent='--m/s'; iconArea.innerHTML=''; bgAnim.style.background='none'; document.body.style.background='linear-gradient(180deg,#061126 0%, #0b1b2a 100%)';
+    });
+
+    // auto-generate once on load
+    generate();
+
+    // ====== SVG icon functions ======
+    function createSVG(w=96,h=96){
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns,'svg'); svg.setAttribute('viewBox','0 0 96 96'); svg.setAttribute('width',w); svg.setAttribute('height',h);
+      return svg;
+    }
+
+    function iconSun(){
+      const svg = createSVG();
+      svg.innerHTML = `
+        <circle cx="48" cy="44" r="16" fill="#FFD86F" />
+        <g opacity="0.9">
+          <path d="M48 14v8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round" transform="translate(0,0)"/>
+          <path d="M48 74v8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+          <path d="M20 44h8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+          <path d="M68 44h8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+          <path d="M26 26l5.5 5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+          <path d="M64.5 64.5l5.5 5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+          <path d="M26 62l5.5-5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+          <path d="M64.5 33.5l5.5-5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
+        </g>
+      `;
+      return svg;
+    }
+
+    function iconPartly(){
+      const svg = createSVG();
+      svg.innerHTML = `
+        <g>
+          <ellipse cx="40" cy="36" rx="14" ry="10" fill="#FFD86F"></ellipse>
+          <g transform="translate(8,18)">
+            <path d="M44 40a16 12 0 0 0-30 0h30z" fill="#dfe9f8"></path>
+          </g>
+        </g>
+      `;
+      return svg;
+    }
+
+    function iconCloud(){
+      const svg = createSVG();
+      svg.innerHTML = `
+        <g>
+          <path d="M20 52c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C51 31 66 30 72 42c6 12-2 24-16 24H26c-6 0-10-6-10-14z" fill="#dfe9f8"></path>
+        </g>
+      `;
+      return svg;
+    }
+
+    function iconRain(){
+      const svg = createSVG();
+      svg.innerHTML = `
+        <g>
+          <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#dfe9f8"></path>
+          <g fill="#6fb6ff">
+            <path d="M34 68c1 3 4 6 6 6s5-3 6-6c1-3-1-6-3-6s-6 3-9 6z"/>
+            <path d="M50 68c1 3 4 6 6 6s5-3 6-6c1-3-1-6-3-6s-6 3-9 6z"/>
+          </g>
+        </g>
+      `;
+      return svg;
+    }
+
+    function iconStorm(){
+      const svg = createSVG();
+      svg.innerHTML = `
+        <g>
+          <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#dfe9f8"></path>
+          <path d="M44 56l-6 12h8l-2 10 12-18h-8z" fill="#ffd86f"></path>
+        </g>
+      `;
+      return svg;
+    }
+
+    function iconSnow(){
+      const svg = createSVG();
+      svg.innerHTML = `
+      <g>
+        <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#eef6ff"></path>
+        <g transform="translate(10,38)" fill="#e6f4ff">
+          <circle cx="16" cy="8" r="3"></circle>
+          <circle cx="36" cy="12" r="3"></circle>
+          <circle cx="56" cy="8" r="3"></circle>
+        </g>
+      </g>
+      `;
+      return svg;
+    }
+
+    function iconFog(){
+      const svg = createSVG();
+      svg.innerHTML = `
+      <g>
+        <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#cfd9df"></path>
+        <rect x="12" y="60" width="72" height="6" rx="3" fill="#cfd9df" opacity="0.8"></rect>
+        <rect x="8" y="70" width="80" height="6" rx="3" fill="#cfd9df" opacity="0.6"></rect>
+      </g>
+      `;
+      return svg;
+    }
+
+  </script>
+</body>
+</html>
