@@ -1,378 +1,560 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ランダム天気アプリ</title>
-  <style>
-    :root{
-      --bg:#0f1724;
-      --card:#0b1220;
-      --muted:#9aa7b2;
-      --accent:#4fc3f7;
-      --glass: rgba(255,255,255,0.03);
-      font-family: Inter, Yu Gothic, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
-    }
-    html,body{height:100%;}
-    body{
-      margin:0;display:grid;place-items:center;min-height:100vh;background:linear-gradient(180deg,#061126 0%, #0b1b2a 100%);
-      color:#e6eef6;
-    }
-    .app{
-      width:360px;max-width:calc(100% - 32px);border-radius:18px;padding:20px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 30px rgba(2,8,23,0.6);
-      backdrop-filter: blur(6px);
-    }
-    header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
-    .title{font-weight:600;font-size:18px;letter-spacing:0.2px}
-    .subtitle{font-size:12px;color:var(--muted)}
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>ランダム天気 — Weather App</title>
+<style>
+  :root{
+    --card-w: 360px;
+    --glass: rgba(255,255,255,0.06);
+    --accent: #ffd166;
+    --text: #ffffff;
+    font-family: Inter, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    height:100%;
+    margin:0;
+    background:linear-gradient(180deg,#111827,#0b1220);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
 
-    .card{
-      background: linear-gradient(135deg,var(--card), rgba(255,255,255,0.01));border-radius:14px;padding:18px;display:flex;gap:16px;align-items:center;position:relative;overflow:hidden
-    }
-    .icon{
-      width:96px;height:96px;display:grid;place-items:center;flex:0 0 96px
-    }
-    .info{flex:1}
-    .temp{font-size:36px;font-weight:700;line-height:1}
-    .desc{font-size:14px;color:var(--muted);margin-top:6px}
-    .meta{display:flex;gap:12px;margin-top:12px;color:var(--muted);font-size:13px}
+  /* App container */
+  .app {
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    gap:20px;
+  }
 
-    .controls{display:flex;gap:8px;margin-top:14px}
-    button{appearance:none;border:0;padding:10px 12px;border-radius:10px;background:var(--glass);color:inherit;cursor:pointer;font-weight:600}
-    button.primary{background:linear-gradient(90deg,var(--accent),#65d6ff);color:#022032}
-    .small{font-size:12px;padding:8px 10px}
+  /* Card */
+  .card {
+    width:var(--card-w);
+    border-radius:18px;
+    padding:20px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+    box-shadow: 0 10px 40px rgba(2,6,23,0.6);
+    backdrop-filter: blur(8px) saturate(120%);
+    position:relative;
+    overflow:hidden;
+  }
 
-    .stat{display:flex;flex-direction:column;align-items:flex-end}
-    .stat .label{font-size:11px;color:var(--muted)}
-    .stat .value{font-weight:700}
+  .top-row {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
 
-    .bg-anim{position:absolute;right:-20%;top:-30%;width:220px;height:220px;filter:blur(30px);opacity:0.15;border-radius:50%;pointer-events:none}
+  .brand {
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .logo {
+    width:44px;height:44px;border-radius:10px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,#ffffff0a,#ffffff04);
+    font-weight:700;color:var(--text);
+    font-size:18px;
+  }
 
-    footer{margin-top:12px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--muted)}
+  .controls {
+    display:flex;
+    gap:8px;
+    align-items:center;
+  }
+  .btn {
+    border:0;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);color:var(--text);
+    cursor:pointer;font-size:14px;
+  }
+  .btn:active{transform:translateY(1px)}
+  .lang-select {
+    padding:6px 8px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,0.03);color:var(--text);
+  }
 
-    /* responsive */
-    @media (max-width:380px){.icon{width:80px;height:80px;flex:0 0 80px}.temp{font-size:30px}}
-  </style>
+  .main {
+    margin-top:16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+
+  .icon-wrap {
+    width:120px;height:120px;border-radius:16px;display:grid;place-items:center;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    box-shadow: inset 0 -8px 18px rgba(0,0,0,0.25);
+    flex-shrink:0;
+  }
+
+  .info {
+    flex:1;
+  }
+  .city {
+    font-size:18px;
+    opacity:0.95;
+    margin-bottom:6px;
+  }
+  .temp {
+    font-size:40px;
+    font-weight:700;
+    line-height:1;
+  }
+  .desc {
+    margin-top:6px;
+    font-size:14px;
+    opacity:0.9;
+  }
+
+  .meta {
+    margin-top:14px;
+    display:flex;
+    gap:12px;
+    justify-content:space-between;
+    font-size:13px;
+    opacity:0.9;
+  }
+
+  /* Background animated shapes depending on weather */
+  .bg-graphic {
+    position:absolute;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    transition:opacity .6s ease;
+  }
+
+  /* small footer */
+  .footer {
+    margin-top:16px;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    align-items:center;
+    font-size:12px;
+    opacity:0.85;
+  }
+
+  /* nice subtle pulse for sun */
+  .sun {
+    animation: sunPulse 6s infinite;
+  }
+  @keyframes sunPulse {
+    0% { transform: scale(1); opacity:1; }
+    50% { transform: scale(1.06); opacity:0.9; }
+    100% { transform: scale(1); opacity:1; }
+  }
+
+  /* Rain drop animation */
+  .raindrop {
+    position:absolute;
+    width:2px;height:12px;border-radius:2px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.15));
+    opacity:0.75;
+    animation: fall 1s linear infinite;
+  }
+  @keyframes fall {
+    0% { transform: translateY(-30px); opacity:0; }
+    10% { opacity:1; }
+    100% { transform: translateY(160px); opacity:0; }
+  }
+
+  /* Snow */
+  .snowflake {
+    position:absolute;
+    width:8px;height:8px;border-radius:50%;
+    background:rgba(255,255,255,0.9);
+    opacity:0.9;
+    animation: drift 3s linear infinite;
+  }
+  @keyframes drift {
+    0% { transform: translateY(-20px) translateX(0); opacity:0; }
+    20% { opacity:1; }
+    100% { transform: translateY(160px) translateX(30px); opacity:0; }
+  }
+
+  /* responsive */
+  @media (max-width:420px){
+    .card{width:100%;padding:16px;border-radius:14px}
+    .icon-wrap{width:96px;height:96px}
+    .temp{font-size:34px}
+  }
+</style>
 </head>
 <body>
-  <main class="app" role="application" aria-label="ランダム天気アプリ">
-    <header>
-      <select id="langSelect" style="background:#0b1220;color:#fff;border:1px solid #333;border-radius:6px;padding:6px 8px;font-size:12px;">
-        <option value="ja">日本語</option>
-        <option value="en">English</option>
-        <option value="zh">中文</option>
-        <option value="fr">Français</option>
-        <option value="ar">العربية</option>
-        <option value="ko">한국어</option>
-        <option value="es">Español</option>
-        <option value="de">Deutsch</option>
-        <option value="pt">Português</option>
-        <option value="it">Italiano</option>
-        <option value="ru">Русский</option>
-      </select>
-      <div>
-        <div class="title">ランダム天気アプリ</div>
-        <div class="subtitle">天気をランダムで生成して表示します</div>
+<div class="app">
+  <div class="card" role="application" aria-label="Random Weather App">
+    <div class="bg-graphic" id="bg"></div>
+
+    <div class="top-row">
+      <div class="brand">
+        <div class="logo">RW</div>
+        <div style="line-height:1">
+          <div style="font-weight:700">Random Weather</div>
+          <div style="font-size:12px;opacity:.85">ランダムな天気を体験</div>
+        </div>
       </div>
-      <div class="subtitle" id="timeNow">-</div>
-    </header>
 
-    <section class="card" id="weatherCard">
-      <div class="bg-anim" id="bgAnim"></div>
+      <div class="controls" aria-hidden="false">
+        <select id="lang" class="lang-select" aria-label="言語選択">
+          <option value="ja" selected>日本語</option>
+          <option value="en">English</option>
+        </select>
+        <button id="newBtn" class="btn" title="新しい天気を生成">Generate</button>
+      </div>
+    </div>
 
-      <div class="icon" id="iconArea" aria-hidden="true">
-        <!-- SVG icon injected by JS -->
+    <div class="main" aria-live="polite">
+      <div class="icon-wrap" id="iconWrap" aria-hidden="true">
+        <!-- svg icon injected by JS -->
       </div>
 
       <div class="info">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div id="location" style="font-weight:700">東京</div>
-            <div id="description" class="desc">--</div>
-          </div>
-          <div class="stat">
-            <div class="label">気温</div>
-            <div class="value" id="temp">--°C</div>
-          </div>
-        </div>
+        <div class="city" id="city">Tokyo, JP</div>
+        <div class="temp" id="temp">--°C</div>
+        <div class="desc" id="desc">-</div>
 
-        <div class="meta" aria-hidden="true">
-          <div>体感: <span id="feels">--°C</span></div>
-          <div>湿度: <span id="humid">--%</span></div>
-          <div>風速: <span id="wind">--m/s</span></div>
+        <div class="meta">
+          <div id="humidity">Humidity: --%</div>
+          <div id="wind">Wind: -- km/h</div>
         </div>
-
       </div>
-    </section>
-
-    <div class="controls">
-      <button class="primary" id="rndBtn">ランダム天気</button>
-      <button id="autoToggle" class="small">自動: OFF</button>
-      <button id="copyBtn" class="small">JSON をコピー</button>
-      <button id="resetBtn" class="small">リセット</button>
     </div>
 
-    <footer>
-      <div id="seedInfo">seed: -</div>
-      <div>Made with ❤️</div>
-    </footer>
-  </main>
+    <div class="footer">
+      <div id="seedText">Seed: --</div>
+      <div style="display:flex;gap:8px">
+        <button id="copyBtn" class="btn" title="現在の天気をコピー">Copy</button>
+        <button id="shareBtn" class="btn" title="シェア">Share</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <script>
-    // 多言語テキスト
-    const I18N = {
-      ja:{title:'ランダム天気アプリ',sub:'天気をランダムで生成して表示します',temp:'気温',feels:'体感',humid:'湿度',wind:'風速',autoOn:'自動: ON',autoOff:'自動: OFF',copyDone:'コピーしました',copy:'JSON をコピー',reset:'リセット'},
-      en:{title:'Random Weather App',sub:'Generate random weather data',temp:'Temp',feels:'Feels',humid:'Humidity',wind:'Wind',autoOn:'Auto: ON',autoOff:'Auto: OFF',copyDone:'Copied!',copy:'Copy JSON',reset:'Reset'},
-      zh:{title:'随机天气应用',sub:'生成随机天气数据',temp:'气温',feels:'体感',humid:'湿度',wind:'风速',autoOn:'自动: 开',autoOff:'自动: 关',copyDone:'已复制',copy:'复制 JSON',reset:'重置'},
-      fr:{title:'Application Météo Aléatoire',sub:'Génère des données météo aléatoires',temp:'Température',feels:'Ressenti',humid:'Humidité',wind:'Vent',autoOn:'Auto : Activé',autoOff:'Auto : Désactivé',copyDone:'Copié !',copy:'Copier JSON',reset:'Réinitialiser'},
-      ar:{title:'تطبيق الطقس العشوائي',sub:'إنشاء بيانات طقس عشوائية',temp:'الحرارة',feels:'المحسوس',humid:'الرطوبة',wind:'الرياح',autoOn:'تلقائي: تشغيل',autoOff:'تلقائي: إيقاف',copyDone:'تم النسخ',copy:'نسخ JSON',reset:'إعادة ضبط'},
-      ko:{title:'랜덤 날씨 앱',sub:'랜덤 날씨 데이터를 생성합니다',temp:'기온',feels:'체감',humid:'습도',wind:'풍속',autoOn:'자동: 켬',autoOff:'자동: 끔',copyDone:'복사됨',copy:'JSON 복사',reset:'리셋'}
-          ru:{title:'Случайное погодное приложение',sub:'Генерирует случайные данные погоды',temp:'Темп',feels:'Ощущается',humid:'Влажность',wind:'Ветер',autoOn:'Авто: Вкл',autoOff:'Авто: Выкл',copyDone:'Скопировано!',copy:'Копировать JSON',reset:'Сброс'}
+<script>
+/*
+  Random Weather App
+  - single file, no external assets
+  - languages: Japanese / English
+*/
+
+(() => {
+  const LANG = {
+    ja: {
+      generate: "生成",
+      humidity: "湿度",
+      wind: "風速",
+      seed: "シード",
+      degrees: "°C",
+      shareText: (c,t,d) => `${c} の天気: ${t}°C、${d}`
+    },
+    en: {
+      generate: "Generate",
+      humidity: "Humidity",
+      wind: "Wind",
+      seed: "Seed",
+      degrees: "°C",
+      shareText: (c,t,d) => `${c} weather: ${t}°C, ${d}`
+    }
+  };
+
+  // Basic data pools
+  const cities = [
+    {name:"Tokyo, JP", tz:"Asia/Tokyo"},
+    {name:"Osaka, JP", tz:"Asia/Tokyo"},
+    {name:"Kyoto, JP", tz:"Asia/Tokyo"},
+    {name:"Seoul, KR", tz:"Asia/Seoul"},
+    {name:"Beijing, CN", tz:"Asia/Shanghai"},
+    {name:"Paris, FR", tz:"Europe/Paris"},
+    {name:"Cairo, EG", tz:"Africa/Cairo"},
+    {name:"San Francisco, US", tz:"America/Los_Angeles"},
+    {name:"New York, US", tz:"America/New_York"},
+    {name:"Sydney, AU", tz:"Australia/Sydney"}
+  ];
+
+  const conditions = [
+    {id:"sunny", name:{ja:"晴れ", en:"Sunny"}, icon: sunSVG, bg: "sunny"},
+    {id:"partly", name:{ja:"ところどころ晴れ", en:"Partly Cloudy"}, icon: partlySVG, bg: "partly"},
+    {id:"cloudy", name:{ja:"曇り", en:"Cloudy"}, icon: cloudSVG, bg: "cloudy"},
+    {id:"rain", name:{ja:"雨", en:"Rain"}, icon: rainSVG, bg: "rain"},
+    {id:"storm", name:{ja:"雷雨", en:"Storm"}, icon: stormSVG, bg: "storm"},
+    {id:"snow", name:{ja:"雪", en:"Snow"}, icon: snowSVG, bg: "snow"},
+    {id:"fog", name:{ja:"霧", en:"Fog"}, icon: fogSVG, bg: "fog"}
+  ];
+
+  // UI elements
+  const cityEl = document.getElementById('city');
+  const tempEl = document.getElementById('temp');
+  const descEl = document.getElementById('desc');
+  const humidityEl = document.getElementById('humidity');
+  const windEl = document.getElementById('wind');
+  const iconWrap = document.getElementById('iconWrap');
+  const bg = document.getElementById('bg');
+  const seedText = document.getElementById('seedText');
+  const langSel = document.getElementById('lang');
+  const newBtn = document.getElementById('newBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  const shareBtn = document.getElementById('shareBtn');
+
+  // Init language
+  function t(key, ...args) {
+    const l = LANG[langSel.value] || LANG.ja;
+    const val = l[key];
+    if (typeof val === 'function') return val(...args);
+    return val;
+  }
+
+  function rand(seed=null){
+    // simple seeded RNG (Mulberry32) when seed provided
+    if(seed == null) return Math.random();
+    let t = seed >>> 0;
+    return function(){
+      t += 0x6D2B79F5;
+      var r = Math.imul(t ^ t >>> 15, 1 | t);
+      r ^= r + Math.imul(r ^ r >>> 7, 61 | r);
+      return ((r ^ r >>> 14) >>> 0) / 4294967296;
+    }
+  }
+
+  // Choose random with optional seeded RNG
+  function pick(arr, rng=Math.random){
+    return arr[Math.floor(rng()*arr.length)];
+  }
+
+  // Render functions
+  function setIcon(svgFn){
+    iconWrap.innerHTML = '';
+    const node = svgFn();
+    node.setAttribute('width','88');
+    node.setAttribute('height','88');
+    node.setAttribute('role','img');
+    iconWrap.appendChild(node);
+  }
+
+  function clearDecor(){
+    // remove existing decorative elements
+    const existing = bg.querySelectorAll('.raindrop, .snowflake');
+    existing.forEach(n => n.remove());
+    bg.style.background = '';
+    bg.style.opacity = '1';
+    bg.innerHTML = '';
+  }
+
+  function applyBackground(kind, rng){
+    clearDecor();
+    if(kind === 'sunny'){
+      bg.style.background = "radial-gradient(circle at 20% 20%, rgba(255,220,120,0.18), rgba(255,160,60,0.06)), linear-gradient(180deg,#09203f,#203a43)";
+    } else if(kind === 'partly'){
+      bg.style.background = "linear-gradient(180deg,#0f2027,#203a43)";
+      // faint sun shape
+      const s = document.createElement('div');
+      s.innerHTML = `<svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" style="position:absolute;left:-10%;top:-20%;width:220px;opacity:0.08;filter:blur(10px)"><circle cx="50" cy="50" r="28" fill="#ffd166"/></svg>`;
+      bg.appendChild(s);
+    } else if(kind === 'cloudy'){
+      bg.style.background = "linear-gradient(180deg,#0b1321,#1b2430)";
+      // soft cloud shapes
+      bg.appendChild(makeCloudGraphic(3, rng));
+    } else if(kind === 'rain' || kind === 'storm'){
+      bg.style.background = "linear-gradient(180deg,#051425,#15324f)";
+      // add raindrops
+      for(let i=0;i<18;i++){
+        const d = document.createElement('div');
+        d.className = 'raindrop';
+        const left = Math.floor(rng()*100);
+        const delay = rng()*1;
+        d.style.left = left + '%';
+        d.style.top = (rng()*0) + 'px';
+        d.style.animationDelay = (delay * -1) + 's';
+        d.style.height = (8 + Math.floor(rng()*12)) + 'px';
+        d.style.opacity = 0.6 + rng()*0.4;
+        bg.appendChild(d);
+      }
+      if(kind === 'storm'){
+        // occasional flash
+        const flash = document.createElement('div');
+        flash.style.position='absolute';
+        flash.style.inset='0';
+        flash.style.pointerEvents='none';
+        let tgl = 0;
+        setInterval(()=> {
+          if(rng() > 0.85){
+            flash.style.background = 'rgba(255,255,255,0.06)';
+            setTimeout(()=> flash.style.background='transparent', 120);
+          }
+        }, 900);
+        bg.appendChild(flash);
+      }
+    } else if(kind === 'snow'){
+      bg.style.background = "linear-gradient(180deg,#081026,#123243)";
+      for(let i=0;i<18;i++){
+        const s = document.createElement('div');
+        s.className = 'snowflake';
+        const left = Math.floor(rng()*100);
+        const delay = rng()*2;
+        s.style.left = left + '%';
+        s.style.top = (rng()*0) + 'px';
+        s.style.animationDelay = (delay * -1) + 's';
+        s.style.width = s.style.height = (4 + Math.floor(rng()*8)) + 'px';
+        s.style.opacity = 0.6 + rng()*0.4;
+        bg.appendChild(s);
+      }
+    } else if(kind === 'fog'){
+      bg.style.background = "linear-gradient(180deg,#0b0e12,#121417)";
+      const fog = document.createElement('div');
+      fog.style.position='absolute';
+      fog.style.inset='0';
+      fog.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00))';
+      fog.style.mixBlendMode='screen';
+      bg.appendChild(fog);
+    }
+  }
+
+  function makeCloudGraphic(num, rng){
+    const wrap = document.createElement('div');
+    wrap.style.position='absolute';
+    wrap.style.inset='0';
+    for(let i=0;i<num;i++){
+      const s = document.createElement('svg');
+      const w = 120 + Math.floor(rng()*220);
+      const left = Math.floor(rng()*120) - 10;
+      const top = Math.floor(rng()*40) - 10;
+      s.setAttribute('viewBox','0 0 200 60');
+      s.style.position='absolute';
+      s.style.left = left + '%';
+      s.style.top = top + '%';
+      s.style.width = w + 'px';
+      s.style.opacity = 0.06 + rng()*0.12;
+      s.innerHTML = `<path d="M30 30a18 18 0 0 1 36 0 22 22 0 0 1 44 0h8a18 18 0 0 1 0 36H20a10 10 0 0 1 0-20h10a10 10 0 0 1 0-16z" fill="#ffffff"/>`;
+      wrap.appendChild(s);
+    }
+    return wrap;
+  }
+
+  function renderWeather(seed=null){
+    const rng = seed == null ? Math.random : rand(seed);
+    const city = pick(cities, rng);
+    const cond = pick(conditions, rng);
+    // temperature logic: vary by city roughly and by condition
+    let base = 12 + Math.floor(rng()*18) - (city.name.includes('San Francisco')?2:0);
+    if(cond.id === 'sunny') base += 4 + Math.floor(rng()*6);
+    if(cond.id === 'snow') base = -6 + Math.floor(rng()*6);
+    if(cond.id === 'storm' || cond.id === 'rain') base -= 2 + Math.floor(rng()*6);
+    const temp = base;
+    const humidity = 30 + Math.floor(rng()*70);
+    const wind = Math.floor(5 + rng()*35);
+
+    // apply to UI
+    cityEl.textContent = city.name;
+    tempEl.textContent = `${temp}${t('degrees')}`;
+    descEl.textContent = cond.name[langSel.value] || cond.name.ja;
+    humidityEl.textContent = `${t('humidity')}: ${humidity}%`;
+    windEl.textContent = `${t('wind')}: ${wind} km/h`;
+
+    setIcon(cond.icon);
+    applyBackground(cond.id, rng);
+
+    // seed display
+    seedText.textContent = `${t('seed')}: ${seed == null ? 'random' : seed}`;
+    // store current snapshot for copy/share
+    currentSnapshot = {
+      city: city.name,
+      temp,
+      desc: cond.name[langSel.value] || cond.name.ja
     };
+  }
 
-    // データ定義（自由に拡張可）
-    const CONDITIONS = [
-      {id:'clear', label:'晴れ', colors:['#ffd86f','#ffb86b'], svg: iconSun},
-      {id:'partly', label:'曇り時々晴れ', colors:['#a8d0ff','#d7f0ff'], svg: iconPartly},
-      {id:'cloudy', label:'くもり', colors:['#cfd8e3','#9fb0c7'], svg: iconCloud},
-      {id:'rain', label:'雨', colors:['#9fd0ff','#6fb6ff'], svg: iconRain},
-      {id:'storm', label:'雷雨', colors:['#8aaed9','#475f7c'], svg: iconStorm},
-      {id:'snow', label:'雪', colors:['#eef6ff','#dff0ff'], svg: iconSnow},
-      {id:'fog', label:'霧', colors:['#cfd9df','#b7c5cc'], svg: iconFog}
-    ];
+  // helper SVG icon creators (return nodes)
+  function makeSVG(html){
+    const div = document.createElement('div');
+    div.innerHTML = html.trim();
+    return div.firstElementChild;
+  }
 
-    // utility: seeded random (xorshift32)
-    function xorshift32(seed){
-      let x = seed || Date.now();
-      return function(){
-        x ^= x << 13; x = x >>> 0;
-        x ^= x >>> 17; x = x >>> 0;
-        x ^= x << 5;  x = x >>> 0;
-        return (x >>> 0) / 4294967295;
+  function sunSVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0,0)"><circle cx="32" cy="28" r="12" fill="#FFD166" class="sun"/></g></svg>`);
+  }
+  function cloudSVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="#E6EEF6" opacity="0.95"><ellipse cx="30" cy="34" rx="22" ry="12"/><ellipse cx="44" cy="30" rx="12" ry="10"/></g></svg>`);
+  }
+  function partlySVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g><circle cx="22" cy="18" r="8" fill="#FFD166" class="sun"/><ellipse cx="36" cy="36" rx="18" ry="10" fill="#E6EEF6" opacity="0.95"/></g></svg>`);
+  }
+  function rainSVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="#E6EEF6"><ellipse cx="34" cy="26" rx="20" ry="12"/><ellipse cx="46" cy="22" rx="10" ry="8"/></g><g fill="#9FD3FF"><path d="M22 40c0 0-1 6 3 9s3 4 3 4-1-4 2-7 5-6 5-6-3 1-6-1c-3-2-7-3-7-3z"/></g></svg>`);
+  }
+  function stormSVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="#E6EEF6"><ellipse cx="34" cy="24" rx="20" ry="12"/><ellipse cx="46" cy="20" rx="10" ry="8"/></g><g fill="#FFDD57"><path d="M28 36l6 0-2 8 8-8h-6l2-8z"/></g></svg>`);
+  }
+  function snowSVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="#E6EEF6"><ellipse cx="34" cy="26" rx="20" ry="12"/></g><g fill="#fff"><circle cx="24" cy="42" r="3"/><circle cx="34" cy="48" r="3"/><circle cx="44" cy="42" r="3"/></g></svg>`);
+  }
+  function fogSVG(){
+    return makeSVG(`<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><g fill="#E6EEF6"><ellipse cx="32" cy="28" rx="22" ry="10"/></g><rect x="10" y="36" width="44" height="6" rx="3" fill="#E6EEF6" opacity="0.6"/></svg>`);
+  }
+
+  // current snapshot
+  let currentSnapshot = null;
+
+  // event wiring
+  newBtn.addEventListener('click', ()=> {
+    // random seed sometimes
+    const seed = Math.random() < 0.35 ? Math.floor(Math.random()*999999) : null;
+    renderWeather(seed);
+  });
+
+  langSel.addEventListener('change', ()=>{
+    // update labels per language
+    newBtn.textContent = t('generate') || (langSel.value === 'en' ? 'Generate' : '生成');
+    // re-render using last snapshot (if any)
+    if(currentSnapshot){
+      // minor re-render: update desc only by matching condition name via available conditions
+      // easiest: regenerate but keep random seed unspecified
+      renderWeather(null);
+    }
+  });
+
+  copyBtn.addEventListener('click', async ()=>{
+    if(!currentSnapshot) return;
+    const text = `${currentSnapshot.city} — ${currentSnapshot.temp}${t('degrees')} — ${currentSnapshot.desc}`;
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.textContent = 'Copied';
+      setTimeout(()=> copyBtn.textContent = 'Copy', 1100);
+    } catch(e){
+      alert('Copy failed — ' + text);
+    }
+  });
+
+  shareBtn.addEventListener('click', async ()=>{
+    if(!currentSnapshot) return;
+    const shareText = t('shareText')(currentSnapshot.city, currentSnapshot.temp, currentSnapshot.desc);
+    if(navigator.share){
+      try {
+        await navigator.share({title:'Random Weather', text: shareText});
+      } catch(e){}
+    } else {
+      try {
+        await navigator.clipboard.writeText(shareText);
+        shareBtn.textContent = 'Shared';
+        setTimeout(()=> shareBtn.textContent = 'Share', 1200);
+      } catch(e){
+        alert(shareText);
       }
     }
+  });
 
-    // get DOM
-    const rndBtn = document.getElementById('rndBtn');
-    const iconArea = document.getElementById('iconArea');
-    const locationEl = document.getElementById('location');
-    const descriptionEl = document.getElementById('description');
-    const tempEl = document.getElementById('temp');
-    const feelsEl = document.getElementById('feels');
-    const humidEl = document.getElementById('humid');
-    const windEl = document.getElementById('wind');
-    const seedInfo = document.getElementById('seedInfo');
-    const timeNow = document.getElementById('timeNow');
-    const bgAnim = document.getElementById('bgAnim');
-    const autoToggle = document.getElementById('autoToggle');
-    const copyBtn = document.getElementById('copyBtn');
-    const resetBtn = document.getElementById('resetBtn');
+  // initialize
+  (function init(){
+    newBtn.textContent = t('generate');
+    renderWeather(null);
+  })();
 
-    let auto = false; let autoTimer = null; let currentSeed = null; let rng = Math.random;
-
-    function updateClock(){
-      const d = new Date();
-      timeNow.textContent = d.toLocaleTimeString();
-    }
-    setInterval(updateClock,1000); updateClock();
-
-    function pick(arr){ return arr[Math.floor(rng()*arr.length)]; }
-
-    function generate(seed){
-      currentSeed = seed || Math.floor(Math.random()*0xffffffff);
-      rng = xorshift32(currentSeed);
-      const cond = pick(CONDITIONS);
-      const temp = Math.round((rng()*45)-10); // -10~35
-      const feels = temp + Math.round((rng()*6)-3);
-      const humid = Math.round(rng()*100);
-      const wind = (Math.round(rng()*150)/10).toFixed(1); // 0.0~15.0
-      const chanceRain = Math.round(rng()*100);
-      const locationNames = ['東京','大阪','京都','札幌','福岡','名古屋','広島','仙台','那覇','長野'];
-      const loc = pick(locationNames);
-
-      const result = {
-        seed: currentSeed,
-        location: loc,
-        condition: cond.id,
-        description: cond.label + (chanceRain>50 ? ' (雨の可能性あり)' : ''),
-        temp, feels, humid, wind, chanceRain,
-        time: new Date().toISOString()
-      };
-
-      render(result, cond);
-      return result;
-    }
-
-    function render(data, cond){
-      seedInfo.textContent = 'seed: ' + data.seed;
-      locationEl.textContent = data.location;
-      descriptionEl.textContent = data.description;
-      tempEl.textContent = data.temp + '°C';
-      feelsEl.textContent = data.feels + '°C';
-      humidEl.textContent = data.humid + '%';
-      windEl.textContent = data.wind + ' m/s';
-
-      // icon
-      iconArea.innerHTML = '';
-      const svg = cond.svg();
-      iconArea.appendChild(svg);
-
-      // background accent
-      bgAnim.style.background = 'radial-gradient(circle at 30% 30%, ' + cond.colors[0] + ', transparent 40%), radial-gradient(circle at 70% 70%,'+cond.colors[1]+',transparent 30%)';
-
-      // subtle page background tint
-      document.body.style.background = 'linear-gradient(180deg,'+cond.colors[1]+'10 0%, #0b1b2a 100%)';
-    }
-
-    // 言語切替
-    const langSelect = document.getElementById('langSelect');
-    let LANG = 'ja';
-
-    langSelect.addEventListener('change',()=>{
-      LANG = langSelect.value;
-      applyLang();
-    });
-
-    function applyLang(){
-      const t = I18N[LANG];
-      document.querySelector('.title').textContent = t.title;
-      document.querySelector('.subtitle').textContent = t.sub;
-      document.getElementById('autoToggle').textContent = auto? t.autoOn : t.autoOff;
-      document.getElementById('copyBtn').textContent = t.copy;
-      document.getElementById('resetBtn').textContent = t.reset;
-    }
-
-    // event handlers
-    rndBtn.addEventListener('click', ()=>{ generate(); });
-
-    autoToggle.addEventListener('click', ()=>{
-      auto = !auto;
-      autoToggle.textContent = '自動: ' + (auto? 'ON':'OFF');
-      if(auto){
-        generate();
-        autoTimer = setInterval(()=> generate(), 4000);
-      } else { clearInterval(autoTimer); autoTimer=null; }
-    });
-
-    copyBtn.addEventListener('click', ()=>{
-      const data = generate();
-      navigator.clipboard?.writeText(JSON.stringify(data, null, 2)).then(()=>{
-        copyBtn.textContent = 'コピーしました';
-        setTimeout(()=>copyBtn.textContent='JSON をコピー',1200);
-      }).catch(()=>alert('クリップボードにコピーできませんでした'));
-    });
-
-    resetBtn.addEventListener('click', ()=>{
-      if(autoTimer){ clearInterval(autoTimer); autoTimer=null; auto=false; autoToggle.textContent='自動: OFF'; }
-      // default clean state
-      seedInfo.textContent = 'seed: -';
-      locationEl.textContent='東京'; descriptionEl.textContent='--'; tempEl.textContent='--°C'; feelsEl.textContent='--°C'; humidEl.textContent='--%'; windEl.textContent='--m/s'; iconArea.innerHTML=''; bgAnim.style.background='none'; document.body.style.background='linear-gradient(180deg,#061126 0%, #0b1b2a 100%)';
-    });
-
-    // auto-generate once on load
-    generate();
-
-    // ====== SVG icon functions ======
-    function createSVG(w=96,h=96){
-      const ns = 'http://www.w3.org/2000/svg';
-      const svg = document.createElementNS(ns,'svg'); svg.setAttribute('viewBox','0 0 96 96'); svg.setAttribute('width',w); svg.setAttribute('height',h);
-      return svg;
-    }
-
-    function iconSun(){
-      const svg = createSVG();
-      svg.innerHTML = `
-        <circle cx="48" cy="44" r="16" fill="#FFD86F" />
-        <g opacity="0.9">
-          <path d="M48 14v8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round" transform="translate(0,0)"/>
-          <path d="M48 74v8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-          <path d="M20 44h8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-          <path d="M68 44h8" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-          <path d="M26 26l5.5 5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-          <path d="M64.5 64.5l5.5 5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-          <path d="M26 62l5.5-5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-          <path d="M64.5 33.5l5.5-5.5" stroke="#FFD86F" stroke-width="4" stroke-linecap="round"/>
-        </g>
-      `;
-      return svg;
-    }
-
-    function iconPartly(){
-      const svg = createSVG();
-      svg.innerHTML = `
-        <g>
-          <ellipse cx="40" cy="36" rx="14" ry="10" fill="#FFD86F"></ellipse>
-          <g transform="translate(8,18)">
-            <path d="M44 40a16 12 0 0 0-30 0h30z" fill="#dfe9f8"></path>
-          </g>
-        </g>
-      `;
-      return svg;
-    }
-
-    function iconCloud(){
-      const svg = createSVG();
-      svg.innerHTML = `
-        <g>
-          <path d="M20 52c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C51 31 66 30 72 42c6 12-2 24-16 24H26c-6 0-10-6-10-14z" fill="#dfe9f8"></path>
-        </g>
-      `;
-      return svg;
-    }
-
-    function iconRain(){
-      const svg = createSVG();
-      svg.innerHTML = `
-        <g>
-          <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#dfe9f8"></path>
-          <g fill="#6fb6ff">
-            <path d="M34 68c1 3 4 6 6 6s5-3 6-6c1-3-1-6-3-6s-6 3-9 6z"/>
-            <path d="M50 68c1 3 4 6 6 6s5-3 6-6c1-3-1-6-3-6s-6 3-9 6z"/>
-          </g>
-        </g>
-      `;
-      return svg;
-    }
-
-    function iconStorm(){
-      const svg = createSVG();
-      svg.innerHTML = `
-        <g>
-          <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#dfe9f8"></path>
-          <path d="M44 56l-6 12h8l-2 10 12-18h-8z" fill="#ffd86f"></path>
-        </g>
-      `;
-      return svg;
-    }
-
-    function iconSnow(){
-      const svg = createSVG();
-      svg.innerHTML = `
-      <g>
-        <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#eef6ff"></path>
-        <g transform="translate(10,38)" fill="#e6f4ff">
-          <circle cx="16" cy="8" r="3"></circle>
-          <circle cx="36" cy="12" r="3"></circle>
-          <circle cx="56" cy="8" r="3"></circle>
-        </g>
-      </g>
-      `;
-      return svg;
-    }
-
-    function iconFog(){
-      const svg = createSVG();
-      svg.innerHTML = `
-      <g>
-        <path d="M18 44c0-9 8-16 18-16 3 0 6 .7 8.5 2.1C49 23 64 22 70 34c6 12-2 24-16 24H24c-6 0-6-6-6-14z" fill="#cfd9df"></path>
-        <rect x="12" y="60" width="72" height="6" rx="3" fill="#cfd9df" opacity="0.8"></rect>
-        <rect x="8" y="70" width="80" height="6" rx="3" fill="#cfd9df" opacity="0.6"></rect>
-      </g>
-      `;
-      return svg;
-    }
-
-  </script>
+})();
+</script>
 </body>
 </html>
-
