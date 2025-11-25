@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>空もよう？</title>
+  <title>ランダム天気アプリ</title>
   <style>
     :root{
       --bg:#0f1724;
@@ -57,9 +57,22 @@
 <body>
   <main class="app" role="application" aria-label="ランダム天気アプリ">
     <header>
+      <select id="langSelect" style="background:#0b1220;color:#fff;border:1px solid #333;border-radius:6px;padding:6px 8px;font-size:12px;">
+        <option value="ja">日本語</option>
+        <option value="en">English</option>
+        <option value="zh">中文</option>
+        <option value="fr">Français</option>
+        <option value="ar">العربية</option>
+        <option value="ko">한국어</option>
+        <option value="es">Español</option>
+        <option value="de">Deutsch</option>
+        <option value="pt">Português</option>
+        <option value="it">Italiano</option>
+        <option value="ru">Русский</option>
+      </select>
       <div>
-        <div class="title">ランダム天気アプリ：空もよう？</div>
-        <div class="subtitle">ランダムな天気を表示します。</div>
+        <div class="title">ランダム天気アプリ</div>
+        <div class="subtitle">天気をランダムで生成して表示します</div>
       </div>
       <div class="subtitle" id="timeNow">-</div>
     </header>
@@ -74,7 +87,7 @@
       <div class="info">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
-            <div id="location" style="font-weight:700">ポートビラ</div>
+            <div id="location" style="font-weight:700">東京</div>
             <div id="description" class="desc">--</div>
           </div>
           <div class="stat">
@@ -93,7 +106,7 @@
     </section>
 
     <div class="controls">
-      <button class="primary" id="rndBtn">天気を表示する</button>
+      <button class="primary" id="rndBtn">ランダム天気</button>
       <button id="autoToggle" class="small">自動: OFF</button>
       <button id="copyBtn" class="small">JSON をコピー</button>
       <button id="resetBtn" class="small">リセット</button>
@@ -101,11 +114,22 @@
 
     <footer>
       <div id="seedInfo">seed: -</div>
-      <div>Made with starcorperation</div>
+      <div>Made with ❤️</div>
     </footer>
   </main>
 
   <script>
+    // 多言語テキスト
+    const I18N = {
+      ja:{title:'ランダム天気アプリ',sub:'天気をランダムで生成して表示します',temp:'気温',feels:'体感',humid:'湿度',wind:'風速',autoOn:'自動: ON',autoOff:'自動: OFF',copyDone:'コピーしました',copy:'JSON をコピー',reset:'リセット'},
+      en:{title:'Random Weather App',sub:'Generate random weather data',temp:'Temp',feels:'Feels',humid:'Humidity',wind:'Wind',autoOn:'Auto: ON',autoOff:'Auto: OFF',copyDone:'Copied!',copy:'Copy JSON',reset:'Reset'},
+      zh:{title:'随机天气应用',sub:'生成随机天气数据',temp:'气温',feels:'体感',humid:'湿度',wind:'风速',autoOn:'自动: 开',autoOff:'自动: 关',copyDone:'已复制',copy:'复制 JSON',reset:'重置'},
+      fr:{title:'Application Météo Aléatoire',sub:'Génère des données météo aléatoires',temp:'Température',feels:'Ressenti',humid:'Humidité',wind:'Vent',autoOn:'Auto : Activé',autoOff:'Auto : Désactivé',copyDone:'Copié !',copy:'Copier JSON',reset:'Réinitialiser'},
+      ar:{title:'تطبيق الطقس العشوائي',sub:'إنشاء بيانات طقس عشوائية',temp:'الحرارة',feels:'المحسوس',humid:'الرطوبة',wind:'الرياح',autoOn:'تلقائي: تشغيل',autoOff:'تلقائي: إيقاف',copyDone:'تم النسخ',copy:'نسخ JSON',reset:'إعادة ضبط'},
+      ko:{title:'랜덤 날씨 앱',sub:'랜덤 날씨 데이터를 생성합니다',temp:'기온',feels:'체감',humid:'습도',wind:'풍속',autoOn:'자동: 켬',autoOff:'자동: 끔',copyDone:'복사됨',copy:'JSON 복사',reset:'리셋'}
+          ru:{title:'Случайное погодное приложение',sub:'Генерирует случайные данные погоды',temp:'Темп',feels:'Ощущается',humid:'Влажность',wind:'Ветер',autoOn:'Авто: Вкл',autoOff:'Авто: Выкл',copyDone:'Скопировано!',copy:'Копировать JSON',reset:'Сброс'}
+    };
+
     // データ定義（自由に拡張可）
     const CONDITIONS = [
       {id:'clear', label:'晴れ', colors:['#ffd86f','#ffb86b'], svg: iconSun},
@@ -114,7 +138,7 @@
       {id:'rain', label:'雨', colors:['#9fd0ff','#6fb6ff'], svg: iconRain},
       {id:'storm', label:'雷雨', colors:['#8aaed9','#475f7c'], svg: iconStorm},
       {id:'snow', label:'雪', colors:['#eef6ff','#dff0ff'], svg: iconSnow},
-      {id:'fog', label:'霧', colors:['#cfd9df','#b7c5cc'], svg: iconFog},  
+      {id:'fog', label:'霧', colors:['#cfd9df','#b7c5cc'], svg: iconFog}
     ];
 
     // utility: seeded random (xorshift32)
@@ -163,7 +187,7 @@
       const humid = Math.round(rng()*100);
       const wind = (Math.round(rng()*150)/10).toFixed(1); // 0.0~15.0
       const chanceRain = Math.round(rng()*100);
-      const locationNames = ['東京','大阪','京都','札幌','福岡','名古屋','広島','仙台','那覇','長野','ポートビラ'];
+      const locationNames = ['東京','大阪','京都','札幌','福岡','名古屋','広島','仙台','那覇','長野'];
       const loc = pick(locationNames);
 
       const result = {
@@ -198,6 +222,24 @@
 
       // subtle page background tint
       document.body.style.background = 'linear-gradient(180deg,'+cond.colors[1]+'10 0%, #0b1b2a 100%)';
+    }
+
+    // 言語切替
+    const langSelect = document.getElementById('langSelect');
+    let LANG = 'ja';
+
+    langSelect.addEventListener('change',()=>{
+      LANG = langSelect.value;
+      applyLang();
+    });
+
+    function applyLang(){
+      const t = I18N[LANG];
+      document.querySelector('.title').textContent = t.title;
+      document.querySelector('.subtitle').textContent = t.sub;
+      document.getElementById('autoToggle').textContent = auto? t.autoOn : t.autoOff;
+      document.getElementById('copyBtn').textContent = t.copy;
+      document.getElementById('resetBtn').textContent = t.reset;
     }
 
     // event handlers
@@ -333,3 +375,4 @@
   </script>
 </body>
 </html>
+
