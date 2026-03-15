@@ -277,6 +277,25 @@ const trip = [
     "不向き",
     "まあまあ適している",
 ];
+const out = [
+    "屋外の運動に好適",
+    "屋外の運動に非常に適しています",
+    "屋外の運動に極めて適している",
+    "屋内の運動に好適",
+    "屋内の運動に非常に適しています",
+    "屋内の運動に極めて適している",
+];
+const road = [
+    "道路条件良好",
+    "スリップ注意",
+    "運転に極めて適している",
+];
+const index = [
+    "日焼け対策が適度に必要",
+    "UVインデックス高め",
+    "UVインデックス低め",
+    "UVインデックス中程度",
+];
 function makeDetails(){
 
 let div=document.getElementById("details");
@@ -290,9 +309,18 @@ let randomWash = Math.floor(Math.random()* 5);
 let currentWash = wash[randomWash];
 let randomTrip = Math.floor(Math.random()* 4);
 let currentTrip = trip[randomTrip];
+let randomOut = Math.floor(Math.random()* 6);
+let currentOut = out[randomOut];
+let randomRoad = Math.floor(Math.random()* 3);
+let currentRoad = road[randomRoad];
+let randomIndex = Math.floor(Math.random()* 4);
+let currentIndex = index[randomIndex];
 const list=[
     `花粉 ${currentPollen}`,
+    `${currentIndex}`,
     `洗車${currentWash }`,
+    `${currentOut}`,
+    `${currentRoad}`,
     `旅行に${currentTrip}`,
     `蚊の発生 ${currentMosquito}`,
 
