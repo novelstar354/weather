@@ -1,481 +1,384 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDomKNQBdl3DOd2AW9KgS4bA__m9uJjljc0Q&s" sizes="16×16" type="image/png" />  
+<meta charset="UTF-8">
 <title>空もよう？</title>
+<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDomKNQBdl3DOd2AW9KgS4bA__m9uJjljc0Q&s" sizes="16×16" type="image/png" />
 <style>
-  :root{
-    --bg:#0f1724;
-    --card:#0b1220;
-    --glass: rgba(255,255,255,0.04);
-    --accent:#ffd166;
-    --muted: #9aa4b2;
-    --white: #edf2f7;
-    --card-radius:16px;
-  }
-  *{box-sizing:border-box}
-  body{
-    margin:0;
-    font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-    background: linear-gradient(180deg,#071021 0%, #0f2a43 60%);
-    color:var(--white);
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:32px;
-  }
 
-  .card{
-    width:360px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius: var(--card-radius);
-    padding:20px;
-    box-shadow: 0 8px 30px rgba(2,6,23,0.6);
-    backdrop-filter: blur(6px);
-  }
+body{
+margin:0;
+font-family:Roboto,Arial;
+background:#111;
+display:flex;
+justify-content:center;
+}
 
-  .top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-  }
-  .location{
-    font-size:14px;
-    color:var(--muted);
-  }
-  .title{
-    font-size:18px;
-    font-weight:700;
-    letter-spacing:0.2px;
-  }
+.phone{
+width:380px;
+min-height:100vh;
+background:#202124;
+color:white;
+padding:15px;
+box-sizing:border-box;
+}
 
-  .main{
-    display:flex;
-    gap:16px;
-    align-items:center;
-    margin-top:18px;
-  }
+.city{
+font-size:28px;
+font-weight:500;
+}
 
-  .visual{
-    width:140px;
-    height:140px;
-    position:relative;
-    border-radius:12px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-  }
+.temp{
+font-size:72px;
+font-weight:300;
+}
 
-  /* sun */
-  .sun{
-    width:68px;
-    height:68px;
-    border-radius:50%;
-    background: radial-gradient(circle at 30% 30%, #fff59d, #ffd54a 40%, #ffb300 100%);
-    box-shadow: 0 6px 30px rgba(255,180,0,0.25);
-    animation: spin-sun 12s linear infinite;
-  }
-  @keyframes spin-sun{
-    from{transform: rotate(0deg)}
-    to{transform: rotate(360deg)}
-  }
+.desc{
+opacity:0.8;
+margin-bottom:15px;
+}
 
-  /* clouds */
-  .cloud{
-    position:absolute;
-    width:120px;
-    height:60px;
-    top:20px;
-    left:10px;
-    border-radius:40px;
-    background: linear-gradient(180deg,#eef2f7 0%,#dfe7ef 100%);
-    filter: blur(0.5px);
-    opacity:0.96;
-    animation: float-cloud 6s ease-in-out infinite;
-  }
-  .cloud:before, .cloud:after{
-    content:"";
-    position:absolute;
-    background: inherit;
-    width:50px;
-    height:50px;
-    border-radius:50%;
-    top:-20px;
-    left:10px;
-  }
-  .cloud:after{left:50px; top:-10px; transform: scale(0.85)}
-  @keyframes float-cloud{
-    0%{transform: translateY(0px)}
-    50%{transform: translateY(6px)}
-    100%{transform: translateY(0px)}
-  }
+.card{
+background:#303134;
+border-radius:20px;
+padding:15px;
+margin-bottom:15px;
+}
 
-  /* rain */
-  .rain{
-    position:absolute;
-    width:100%;
-    height:100%;
-    pointer-events:none;
-    top:0; left:0;
-  }
-  .drop{
-    position:absolute;
-    width:2px;
-    height:14px;
-    bottom:10px;
-    border-radius:2px;
-    opacity:0.9;
-    transform: translateY(-10px);
-    animation: fall 0.9s linear infinite;
-    background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.3));
-  }
-  @keyframes fall{
-    0%{transform: translateY(-30px); opacity:0}
-    10%{opacity:1}
-    100%{transform: translateY(90px); opacity:0}
-  }
+.row{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
 
-  /* snow */
-  .snow{
-    position:absolute;
-    width:100%;
-    height:100%;
-    pointer-events:none;
-    top:0; left:0;
-  }
-  .flake{
-    position:absolute;
-    width:6px;
-    height:6px;
-    border-radius:50%;
-    background: rgba(255,255,255,0.9);
-    opacity:0.95;
-    animation: drift linear infinite;
-  }
-  @keyframes drift{
-    0%{transform: translateY(-20px) translateX(0)}
-    50%{transform: translateY(40px) translateX(8px)}
-    100%{transform: translateY(110px) translateX(-10px)}
-  }
+.hourly{
+display:flex;
+overflow-x:auto;
+gap:20px;
+}
 
-  .info{
-    flex:1;
-    padding-right:6px;
-  }
-  .temp{
-    font-size:40px;
-    font-weight:800;
-    line-height:1;
-  }
-  .desc{
-    margin-top:6px;
-    color:var(--muted);
-    font-size:14px;
-  }
-  .controls{
-    margin-top:16px;
-    display:flex;
-    gap:8px;
-    align-items:center;
-    justify-content:space-between;
-  }
+.hour{
+text-align:center;
+min-width:50px;
+}
 
-  .btn{
-    background:var(--glass);
-    border: none;
-    padding:8px 12px;
-    border-radius:10px;
-    color:var(--white);
-    cursor:pointer;
-    font-weight:600;
-    box-shadow: 0 4px 12px rgba(2,6,23,0.6);
-    transition: transform .12s ease;
-  }
-  .btn:active{transform: scale(.98)}
-  .btn.primary{
-    background: linear-gradient(90deg,#ffd166,#ff9f1c);
-    color:#071021;
-  }
-  .toggle{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    font-size:13px;
-  }
+.day{
+display:flex;
+justify-content:space-between;
+margin:6px 0;
+}
 
-  .meta{
-    margin-top:12px;
-    font-size:12px;
-    color:var(--muted);
-    text-align:center;
-  }
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:10px;
+}
 
-footer {
-           padding: 30px;
-           text-align: center;
-           font-size: 0.85rem;
-           color: rgba(255,255,255,0.5);
-           border-top: 1px solid rgba(255,255,255,0.1);
-           margin-top: 60px;
-       }
-    
-  /* small responsive */
-  @media (max-width:420px){
-    .card{width:100%}
-    .visual{width:120px;height:120px}
-    .temp{font-size:34px}
-  }
+.grid div{
+background:#3c4043;
+padding:10px;
+border-radius:12px;
+text-align:center;
+font-size:13px;
+}
+
+canvas{
+width:100%;
+height:120px;
+}
+
+button{
+background:#4285f4;
+border:none;
+padding:8px 14px;
+border-radius:10px;
+color:white;
+cursor:pointer;
+}
+
 </style>
 </head>
 <body>
-  <div class="card" id="app">
-    <div class="top">
-      <div>
-        <div class="title">空もよう？</div>
-        <div class="location" id="city">—</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:12px;color:var(--muted)">次へ</div>
-        <div id="time" style="font-size:12px;color:var(--muted)">—</div>
-      </div>
-    </div>
 
-    <div class="main">
-      <div class="visual" id="visual">
-        <!-- dynamic visuals go here -->
-      </div>
-      <div class="info">
-        <div class="temp" id="temp">--°C</div>
-        <div class="desc" id="desc">—</div>
+<div class="phone">
 
-        <div class="controls">
-          <div>
-            <button class="btn primary" id="randomBtn">次へ</button>
-            <button class="btn" id="toggleAnimBtn">アニメ切替</button>
-          </div>
-          <div class="toggle">
-            <label id="unitLabel">℃</label>
-            <input type="checkbox" id="unitToggle" aria-label="℃/℉" />
-          </div>
-        </div>
+<div class="city" id="city"></div>
 
-        <div class="meta" id="meta">天気エフェクト: —</div>
-      </div>
-    </div>
-  </div>
+<div class="temp" id="temp"></div>
 
-<footer>
-     © 2025 Star Corporation. All Rights Reserved.
-</footer>
+<div class="desc" id="desc"></div>
+
+<div style="margin-bottom:10px">
+
+<button onclick="changeCity()">都市変更</button>
+
+<button onclick="updateWeather()">天気更新</button>
+
+</div>
+
+<div class="card">
+<h3>時間ごとの天気</h3>
+<div class="hourly" id="hourly"></div>
+</div>
+
+<div class="card">
+<h3>7日間予報</h3>
+<div id="week"></div>
+</div>
+<div class="card">
+<h3>気象データ</h3>
+<div class="grid" id="details2"></div>
+</div>
+<div class="card">
+<h3>太陽</h3>
+<canvas id="sunGraph"></canvas>
+<div id="sunTimes"></div>
+</div>
+
+<div class="card">
+<h3>生活のヒント</h3>
+<div class="grid" id="details"></div>
+</div>
+
+</div>
 
 <script>
-(function(){
-  const cities = ["東京","大阪","札幌","名古屋","京都","福岡","那覇","ニューヨーク","ロンドン","パリ","ソウル","ポートビレ","カイロ"];
-  const weatherTypes = [
-    { id:"sunny", name:"晴れ", tempRange:[18,32], emoji:"☀️" },
-    { id:"cloudy", name:"曇り", tempRange:[10,22], emoji:"☁️" },
-    { id:"rain", name:"雨", tempRange:[6,20], emoji:"🌧️" },
-    { id:"snow", name:"雪", tempRange:[-8,4], emoji:"❄️" },
-    { id:"storm", name:"雷雨", tempRange:[12,26], emoji:"⛈️" },
-    { id:"fog", name:"霧", tempRange:[2,16], emoji:"🌫️" }
-  ];
 
-  const app = {
-    el: document.getElementById('app'),
-    visual: document.getElementById('visual'),
-    tempEl: document.getElementById('temp'),
-    descEl: document.getElementById('desc'),
-    cityEl: document.getElementById('city'),
-    timeEl: document.getElementById('time'),
-    metaEl: document.getElementById('meta'),
-    randomBtn: document.getElementById('randomBtn'),
-    unitToggle: document.getElementById('unitToggle'),
-    unitLabel: document.getElementById('unitLabel'),
-    toggleAnimBtn: document.getElementById('toggleAnimBtn'),
-    animEnabled: true,
-    state: {}
-  };
+const cities=["東京","大阪","札幌","名古屋","京都","福岡","那覇","ニューヨーク","ロンドン","パリ","ソウル","ポートビレ","カイロ"];
 
-  function randInt(min,max){
-    return Math.floor(Math.random()*(max-min+1))+min;
-  }
+const weathers=[
+{icon:"☀️",name:"晴れ"},
+{icon:"☁️",name:"くもり"},
+{icon:"🌧️",name:"雨"},
+{icon:"❄️",name:"雪"},
+{icon:"⛈️",name:"雷"},
+];
+let currentCityIndex = 0;
 
-  function choose(arr){ return arr[randInt(0,arr.length-1)]; }
+function changeCity(){
 
-  function cToF(c){ return Math.round(c * 9/5 + 32); }
-  function fToC(f){ return Math.round((f - 32) * 5/9); }
+currentCityIndex++;
 
-  function renderVisual(typeId){
-    app.visual.innerHTML = '';
-    app.metaEl.textContent = '天気エフェクト: ' + typeId;
-    if(!app.animEnabled){
-      // static simple emoji
-      const big = document.createElement('div');
-      big.style.fontSize = '54px';
-      big.style.opacity = '0.95';
-      big.textContent = weatherTypes.find(w=>w.id===typeId).emoji;
-      app.visual.appendChild(big);
-      return;
-    }
+if(currentCityIndex >= cities.length){
+currentCityIndex = 0;
+}
 
-    if(typeId === 'sunny'){
-      const sun = document.createElement('div');
-      sun.className = 'sun';
-      app.visual.appendChild(sun);
-    } else if(typeId === 'cloudy'){
-      const cloud = document.createElement('div');
-      cloud.className = 'cloud';
-      app.visual.appendChild(cloud);
-      // little sun peeking
-      const sun = document.createElement('div');
-      sun.className='sun';
-      sun.style.width='46px'; sun.style.height='46px';
-      sun.style.position='absolute'; sun.style.right='8px'; sun.style.bottom='8px';
-      sun.style.animationDuration='18s';
-      sun.style.opacity='0.85';
-      app.visual.appendChild(sun);
-    } else if(typeId === 'rain' || typeId === 'storm'){
-      const cloud = document.createElement('div');
-      cloud.className = 'cloud';
-      cloud.style.left = '10px';
-      cloud.style.top = '6px';
-      app.visual.appendChild(cloud);
+updateWeather();
 
-      const rain = document.createElement('div');
-      rain.className = 'rain';
-      app.visual.appendChild(rain);
+}
+function updateWeather(){
 
-      const drops = 12;
-      for(let i=0;i<drops;i++){
-        const d = document.createElement('div');
-        d.className='drop';
-        d.style.left = (10 + Math.random()*120) + 'px';
-        d.style.animationDelay = (Math.random()*0.8) + 's';
-        d.style.height = (10 + Math.random()*12) + 'px';
-        d.style.opacity = 0.7 + Math.random()*0.3;
-        rain.appendChild(d);
-      }
+let city = cities[currentCityIndex];
 
-      if(typeId === 'storm'){
-        // flash effect
-        const flash = document.createElement('div');
-        flash.style.position='absolute';
-        flash.style.inset='0';
-        flash.style.pointerEvents='none';
-        flash.style.animation = 'storm-flash 3s linear infinite';
-        flash.style.background='linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,0))';
-        app.visual.appendChild(flash);
-        // small keyframes dynamically
-        const style = document.createElement('style');
-        style.textContent = `
-          @keyframes storm-flash{
-            0%,80%{opacity:0}
-            85%{opacity:0.25}
-            88%{opacity:0}
-            95%{opacity:0.18}
-            100%{opacity:0}
-          }`;
-        document.head.appendChild(style);
-      }
-    } else if(typeId === 'snow'){
-      const cloud = document.createElement('div');
-      cloud.className = 'cloud';
-      cloud.style.left = '6px';
-      cloud.style.top = '6px';
-      app.visual.appendChild(cloud);
+let w = weathers[Math.floor(Math.random()*weathers.length)];
 
-      const snow = document.createElement('div');
-      snow.className = 'snow';
-      app.visual.appendChild(snow);
+let temp = Math.floor(Math.random()*30);
 
-      const flakes = 14;
-      for(let i=0;i<flakes;i++){
-        const f = document.createElement('div');
-        f.className='flake';
-        f.style.left = (Math.random()*100) + 'px';
-        f.style.top = (Math.random()*20 - 10) + 'px';
-        f.style.opacity = 0.6 + Math.random()*0.4;
-        f.style.animationDuration = (4 + Math.random()*5) + 's';
-        f.style.transform = 'translateY(-10px)';
-        snow.appendChild(f);
-      }
-    } else if(typeId === 'fog'){
-      const fog = document.createElement('div');
-      fog.style.position='absolute';
-      fog.style.inset='0';
-      fog.style.background = 'linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03))';
-      fog.style.filter = 'blur(6px)';
-      fog.style.opacity = 0.8;
-      fog.style.animation = 'float-cloud 7s ease-in-out infinite';
-      app.visual.appendChild(fog);
+document.getElementById("city").innerText = city;
+document.getElementById("temp").innerText = temp + "°";
+document.getElementById("desc").innerText = w.icon + " " + w.name;
 
-      const small = document.createElement('div');
-      small.style.position='absolute';
-      small.style.left='10px';
-      small.style.top='30px';
-      small.style.width='100px';
-      small.style.height='40px';
-      small.style.background='linear-gradient(180deg,#eef2f7,#dfe7ef)';
-      small.style.borderRadius='40px';
-      small.style.opacity=0.7;
-      app.visual.appendChild(small);
-    }
-  }
+makeHourly();
+makeWeek();
+makeDetails();
+makeDetails2();
+drawSun();
 
-  function updateUI(state){
-    const { city, weather, tempC, time } = state;
-    app.cityEl.textContent = city;
-    app.timeEl.textContent = time;
-    const useF = app.unitToggle.checked;
-    app.tempEl.textContent = (useF ? cToF(tempC) : tempC) + (useF ? '°F' : '°C');
-    app.unitLabel.textContent = useF ? '℉' : '℃';
-    app.descEl.textContent = weather.name;
-    renderVisual(weather.id);
-  }
+}
 
-  function generate(){
-    const city = choose(cities);
-    const weather = choose(weatherTypes);
-    const tempRange = weather.tempRange;
-    const tempC = randInt(tempRange[0], tempRange[1]);
-    const time = (new Date()).toLocaleString('ja-JP');
-    app.state = { city, weather, tempC, time };
-    updateUI(app.state);
-  }
+function makeHourly(){
 
-  // initial
-  generate();
+let div=document.getElementById("hourly");
+div.innerHTML="";
 
-  // events
-  app.randomBtn.addEventListener('click', ()=> {
-    generate();
-  });
+for(let i=0;i<12;i++){
 
-  app.unitToggle.addEventListener('change', ()=>{
-    // only update displayed temp
-    updateUI(app.state);
-  });
+let w=weathers[Math.floor(Math.random()*weathers.length)];
 
-  app.toggleAnimBtn.addEventListener('click', ()=>{
-    app.animEnabled = !app.animEnabled;
-    app.toggleAnimBtn.textContent = app.animEnabled ? 'アニメ有効' : 'アニメ無効';
-    updateUI(app.state);
-  });
+let d=document.createElement("div");
+d.className="hour";
 
-  // keyboard: space to random
-  window.addEventListener('keydown', (e)=>{
-    if(e.code === 'Space') {
-      e.preventDefault();
-      generate();
-    }
-  });
+d.innerHTML=
+"<div>"+(i*2)+"時</div>"+
+"<div>"+w.icon+"</div>"+
+"<div>"+Math.floor(Math.random()*30)+"°</div>";
 
-})();
+div.appendChild(d);
+
+}
+
+}
+
+function makeWeek(){
+
+let div=document.getElementById("week");
+div.innerHTML="";
+
+const days=["月","火","水","木","金","土","日"];
+
+for(let i=0;i<7;i++){
+
+let w=weathers[Math.floor(Math.random()*weathers.length)];
+
+let d=document.createElement("div");
+
+d.className="day";
+
+d.innerHTML=
+"<span>"+days[i]+"</span>"+
+"<span>"+w.icon+"</span>"+
+"<span>"+Math.floor(Math.random()*30)+"°</span>";
+
+div.appendChild(d);
+
+}
+
+}
+const pollen = [
+    "ほとんどない",
+    "少ない",
+    "普通",
+    "少し多い",
+    "多い",
+    "かなり多い",
+    "非常に多い"
+];
+const mosquito = [
+    "ほとんどなし",
+    "少ない",
+    "普通",
+    "少し多い",
+    "多い",
+    "かなり多い",
+    "非常に多い"
+];
+function makeDetails(){
+
+let div=document.getElementById("details");
+
+div.innerHTML="";
+let randomPollen = Math.floor(Math.random()* 7);
+let currentPollen = pollen[randomPollen];
+let randomMosquito = Math.floor(Math.random()* 7);
+let currentMosquito = mosquito[randomMosquito];
+const list=[
+`花粉 ${currentPollen}`,
+`蚊の発生 ${currentMosquito}`,
+
+];
+
+list.forEach(t=>{
+let d=document.createElement("div");
+d.innerText=t;
+div.appendChild(d);
+});
+
+}
+const UV = [
+    "0 微弱",
+    "1 微弱",
+    "2 弱",
+    "3 弱",
+    "4 弱",
+    "5 中",
+    "6 中",
+    "7 中",
+    "8 強",
+    "9 強",
+    "10 極強",
+    "11 極強",
+];
+const direction =[
+    "北",
+    "北北東",
+    "北東",
+    "東北東",
+    "東",
+    "東南東",
+    "南東",
+    "南南東",
+    "南",
+    "南南西",
+    "南西",
+    "西南西",
+    "西",
+    "西北西",
+    "北西",
+    "北北西",
+    
+]
+function makeDetails2(){
+
+let div=document.getElementById("details2");
+
+div.innerHTML="";
+
+let randomMosquito = Math.floor(Math.random()* 7);
+let currentMosquito = mosquito[randomMosquito];
+let randomUV = Math.floor(Math.random()*11);
+let currentUV = UV[randomUV];
+let randomDirection = Math.floor(Math.random()* 16);
+let currentDirection = direction[randomDirection];
+let randomWindow = Math.floor(Math.random()* 20);
+const list=[
+    `UV ${currentUV}`,
+    "体感温度 "+Math.floor(Math.random()*30)+"°",
+    "湿度 "+Math.floor(Math.random()*100)+"%",
+    `${currentDirection}の風 ${randomWindow}m/s`,
+    "気圧 "+(990+Math.floor(Math.random()*40))+"hPa",
+    "視界 "+(Math.random()*10).toFixed(1)+"km",
+];
+
+list.forEach(t=>{
+let d=document.createElement("div");
+d.innerText=t;
+div.appendChild(d);
+});
+
+}
+function drawSun(){
+
+let canvas=document.getElementById("sunGraph");
+let ctx=canvas.getContext("2d");
+
+canvas.width=340;
+canvas.height=120;
+
+ctx.clearRect(0,0,340,120);
+
+ctx.strokeStyle="white";
+
+ctx.beginPath();
+
+for(let x=0;x<=340;x++){
+
+let t=x/340;
+let y=100-Math.sin(t*Math.PI)*80;
+
+if(x===0) ctx.moveTo(x,y);
+else ctx.lineTo(x,y);
+
+}
+
+ctx.stroke();
+
+let sunX=Math.random()*340;
+
+let sunY=100-Math.sin((sunX/340)*Math.PI)*80;
+
+ctx.beginPath();
+ctx.arc(sunX,sunY,6,0,Math.PI*2);
+ctx.fillStyle="yellow";
+ctx.fill();
+
+document.getElementById("sunTimes").innerText=
+"日の出 "+(5+Math.floor(Math.random()*2))+":00  日の入り "+(17+Math.floor(Math.random()*2))+":00";
+
+}
+
+updateWeather();
+
 </script>
+
 </body>
 </html>
