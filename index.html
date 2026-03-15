@@ -95,7 +95,14 @@ border-radius:10px;
 color:white;
 cursor:pointer;
 }
+.hourly::-webkit-scrollbar{
+height:4px;
+}
 
+.hourly::-webkit-scrollbar-thumb{
+background:#555;
+border-radius:10px;
+}
 </style>
 </head>
 <body>
@@ -144,7 +151,7 @@ cursor:pointer;
 
 <script>
 
-const cities=["東京","大阪","札幌","名古屋","京都","福岡","那覇","ニューヨーク","ロンドン","パリ","ソウル","ポートビレ","カイロ","シーラーズ","チャータズタワーズ","ハイデラバード","チェリャビンスク","ベロオリゾンチ",];
+const cities=["東京","大阪","札幌","名古屋","京都","福岡","那覇","ニューヨーク","ロンドン","パリ","ソウル","ポートビラ","カイロ","シーラーズ","チャータズタワーズ","ハイデラバード","チェリャビンスク","ベロオリゾンチ",];
 
 const weathers=[
 {icon:"☀️",name:"晴れ"},
@@ -154,6 +161,7 @@ const weathers=[
 {icon:"⛈️",name:"雷"},
 ];
 let currentCityIndex = 0;
+let temp = 0;
 
 function changeCity(){
 
@@ -172,7 +180,8 @@ let city = cities[currentCityIndex];
 
 let w = weathers[Math.floor(Math.random()*weathers.length)];
 
-let temp = Math.floor(Math.random()*30);
+//let temp = Math.floor(Math.random()*35)-5;
+temp = Math.floor(Math.random()*35)-5;
 
 document.getElementById("city").innerText = city;
 document.getElementById("temp").innerText = temp + "°";
@@ -197,9 +206,10 @@ let w=weathers[Math.floor(Math.random()*weathers.length)];
 
 let d=document.createElement("div");
 d.className="hour";
-
+let now = new Date().getHours();
 d.innerHTML=
-"<div>"+(i*2)+"時</div>"+
+"<div>"+((now+i*2)%24)+"時</div>"+
+//"<div>"+(i*2)+"時</div>"+
 "<div>"+w.icon+"</div>"+
 "<div>"+Math.floor(Math.random()*30)+"°</div>";
 
@@ -214,18 +224,20 @@ function makeWeek(){
 let div=document.getElementById("week");
 div.innerHTML="";
 
-const days=["月","火","水","木","金","土","日"];
+const days=["日","月","火","水","木","金","土"];
+let today=new Date().getDay();
 
 for(let i=0;i<7;i++){
 
 let w=weathers[Math.floor(Math.random()*weathers.length)];
 
-let d=document.createElement("div");
+let day=days[(today+i)%7];
 
+let d=document.createElement("div");
 d.className="day";
 
 d.innerHTML=
-"<span>"+days[i]+"</span>"+
+"<span>"+day+"</span>"+
 "<span>"+w.icon+"</span>"+
 "<span>"+Math.floor(Math.random()*30)+"°</span>";
 
@@ -235,7 +247,7 @@ div.appendChild(d);
 
 }
 const pollen = [
-    "ほとんどない",
+    "ほとんどなし",
     "少ない",
     "普通",
     "少し多い",
@@ -245,12 +257,25 @@ const pollen = [
 ];
 const mosquito = [
     "ほとんどなし",
-    "少ない",
+    "少なめ",
     "普通",
-    "少し多い",
-    "多い",
-    "かなり多い",
+    "少し多め",
+    "多め",
+    "かなり多め",
     "非常に多い"
+];
+const wash = [ 
+    "に不向き", 
+    "不要", 
+    "に好適", 
+    "に非常に適しています", 
+    "に最適"
+];
+const trip = [
+    "好適",
+    "最適",
+    "不向き",
+    "まあまあ適している",
 ];
 function makeDetails(){
 
@@ -261,9 +286,15 @@ let randomPollen = Math.floor(Math.random()* 7);
 let currentPollen = pollen[randomPollen];
 let randomMosquito = Math.floor(Math.random()* 7);
 let currentMosquito = mosquito[randomMosquito];
+let randomWash = Math.floor(Math.random()* 5);
+let currentWash = wash[randomWash];
+let randomTrip = Math.floor(Math.random()* 4);
+let currentTrip = trip[randomTrip];
 const list=[
-`花粉 ${currentPollen}`,
-`蚊の発生 ${currentMosquito}`,
+    `花粉 ${currentPollen}`,
+    `洗車${currentWash }`,
+    `旅行に${currentTrip}`,
+    `蚊の発生 ${currentMosquito}`,
 
 ];
 
@@ -320,9 +351,13 @@ let currentUV = UV[randomUV];
 let randomDirection = Math.floor(Math.random()* 16);
 let currentDirection = direction[randomDirection];
 let randomWindow = Math.floor(Math.random()* 20);
+//let feels = temp + Math.floor(Math.random()*6-3);
+let randomFeels = Math.floor(Math.random()*6 -3);
+let feels = temp + randomFeels;
 const list=[
     `UV ${currentUV}`,
-    "体感温度 "+Math.floor(Math.random()*30)+"°",
+    //"体感温度 "+Math.floor(Math.random()*30)+"°",
+    `体感温度${feels}℃`,
     "湿度 "+Math.floor(Math.random()*100)+"%",
     `${currentDirection}の風 ${randomWindow}m/s`,
     "気圧 "+(990+Math.floor(Math.random()*40))+"hPa",
@@ -362,7 +397,10 @@ else ctx.lineTo(x,y);
 
 ctx.stroke();
 
-let sunX=Math.random()*340;
+//let sunX=Math.random()*340;
+let now = new Date().getHours();
+let sunX = (now/24)*340;
+
 
 let sunY=100-Math.sin((sunX/340)*Math.PI)*80;
 
