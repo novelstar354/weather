@@ -168,13 +168,23 @@ const airQuality = [
 "大気質 悪い",
 "大気質 非常に悪い"
 ];
-function getAirQualityText(aqi){
+/*function getAirQualityText(aqi){
 
 if(aqi <= 50) return "良い";
 if(aqi <= 100) return "普通";
 if(aqi <= 150) return "敏感な人に悪影響";
 if(aqi <= 200) return "悪い";
 if(aqi <= 300) return "非常に悪い";
+
+}*/
+function getAirQualityText(aqi){
+
+if(aqi <= 50) return "良い";
+if(aqi <= 85) return "普通";
+if(aqi <= 110) return "敏感な人に悪影響";
+if(aqi <= 140) return "軽度汚染";
+if(aqi <= 170) return "悪い";
+if(aqi <= 200) return "非常に悪い";
 
 }
 let currentCityIndex = 0;
