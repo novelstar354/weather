@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>空もよう？</title>
-<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDomKNQBdl3DOd2AW9KgS4bA__m9uJjljc0Q&s" sizes="16×16" type="image/png" />
+<link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRDomKNQBdl3DOd2AW9KgS4bA__m9uJjljc0Q&s" sizes="16x16" type="image/png" />
 <style>
 
 body{
@@ -113,8 +113,9 @@ border-radius:10px;
 
 <div class="temp" id="temp"></div>
 
-<div class="desc" id="desc"></div>
 
+<div class="desc" id="desc"></div>
+<div id="maxmin" style="margin-bottom:10px;opacity:0.8;"></div>
 <div style="margin-bottom:10px">
 
 <button onclick="changeCity()">都市変更</button>
@@ -160,9 +161,27 @@ const weathers=[
 {icon:"❄️",name:"雪"},
 {icon:"⛈️",name:"雷"},
 ];
+const airQuality = [
+"大気質 良い",
+"大気質 普通",
+"大気質 やや悪い",
+"大気質 悪い",
+"大気質 非常に悪い"
+];
+function getAirQualityText(aqi){
+
+if(aqi <= 50) return "良い";
+if(aqi <= 100) return "普通";
+if(aqi <= 150) return "敏感な人に悪影響";
+if(aqi <= 200) return "悪い";
+if(aqi <= 300) return "非常に悪い";
+
+}
 let currentCityIndex = 0;
 let temp = 0;
-
+let maxTemp = 0;
+let minTemp = 0;
+              
 function changeCity(){
 
 currentCityIndex++;
@@ -177,15 +196,22 @@ updateWeather();
 function updateWeather(){
 
 let city = cities[currentCityIndex];
-
 let w = weathers[Math.floor(Math.random()*weathers.length)];
-
-//let temp = Math.floor(Math.random()*35)-5;
+let randomAir = Math.floor(Math.random()*airQuality.length);
+let currentAir = airQuality[randomAir];
+let aqi = Math.floor(Math.random()*300);
+let airText = getAirQualityText(aqi);
 temp = Math.floor(Math.random()*35)-5;
+
+maxTemp = temp + Math.floor(Math.random()*5+2);
+minTemp = temp - Math.floor(Math.random()*5+2);
 
 document.getElementById("city").innerText = city;
 document.getElementById("temp").innerText = temp + "°";
 document.getElementById("desc").innerText = w.icon + " " + w.name;
+
+document.getElementById("maxmin").innerText =
+"最高気温 " + maxTemp + "° / 最低気温 " + minTemp + "°  |  大気質 " + aqi + " (" + airText + ")";
 
 makeHourly();
 makeWeek();
@@ -233,13 +259,16 @@ let w=weathers[Math.floor(Math.random()*weathers.length)];
 
 let day=days[(today+i)%7];
 
+let max=Math.floor(Math.random()*30);
+let min=max-Math.floor(Math.random()*8);
+
 let d=document.createElement("div");
 d.className="day";
 
 d.innerHTML=
 "<span>"+day+"</span>"+
 "<span>"+w.icon+"</span>"+
-"<span>"+Math.floor(Math.random()*30)+"°</span>";
+"<span>"+max+"° / "+min+"°</span>";
 
 div.appendChild(d);
 
@@ -296,6 +325,12 @@ const index = [
     "UVインデックス低め",
     "UVインデックス中程度",
 ];
+const water = [
+    "保湿化粧品の使用増量",
+    "保湿化粧品の使用",
+    "しっかり保湿",
+    "オイルコントロール化粧品の使用",
+];
 function makeDetails(){
 
 let div=document.getElementById("details");
@@ -315,9 +350,12 @@ let randomRoad = Math.floor(Math.random()* 3);
 let currentRoad = road[randomRoad];
 let randomIndex = Math.floor(Math.random()* 4);
 let currentIndex = index[randomIndex];
+let randomWater = Math.floor(Math.random()* 4);
+let currentWater = water[randomWater];
 const list=[
     `花粉 ${currentPollen}`,
     `${currentIndex}`,
+    `${currentWater}`,
     `洗車${currentWash }`,
     `${currentOut}`,
     `${currentRoad}`,
