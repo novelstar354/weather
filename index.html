@@ -448,6 +448,9 @@ div.appendChild(d);
 });
 
 }
+function pad(n){
+return n.toString().padStart(2,"0");
+}
 function drawSun(){
 
 let canvas=document.getElementById("sunGraph");
@@ -486,8 +489,18 @@ ctx.arc(sunX,sunY,6,0,Math.PI*2);
 ctx.fillStyle="yellow";
 ctx.fill();
 
-document.getElementById("sunTimes").innerText=
+/*document.getElementById("sunTimes").innerText=
 "日の出 "+(5+Math.floor(Math.random()*2))+":00  日の入り "+(17+Math.floor(Math.random()*2))+":00";
+
+}*/
+let sunriseH = 5 + Math.floor(Math.random()*2);
+let sunriseM = Math.floor(Math.random()*60);
+let sunsetH = 17 + Math.floor(Math.random()*2);
+let sunsetM = Math.floor(Math.random()*60);
+
+document.getElementById("sunTimes").innerText =
+"日の出 " + sunriseH + ":" + pad(sunriseM) +
+"  日の入り " + sunsetH + ":" + pad(sunsetM);
 
 }
 
