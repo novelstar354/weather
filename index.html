@@ -184,7 +184,8 @@ if(aqi <= 85) return "普通";
 if(aqi <= 110) return "敏感な人に悪影響";
 if(aqi <= 140) return "軽度汚染";
 if(aqi <= 170) return "悪い";
-if(aqi <= 200) return "非常に悪い";
+if(aqi > 170) return "非常に悪い";
+
 
 }
 let currentCityIndex = 0;
